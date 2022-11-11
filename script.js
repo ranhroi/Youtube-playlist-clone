@@ -2,10 +2,10 @@ const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
 const grid = $('.grid')
 const player = $('.player')
-
 const mediaActive = $('.media')
 const spinnerLoad = $('.video-spinner')
 const video = $('.video')
+
 const playing = $('.btn-toggle-play')
 const nextBtn = $('.btn-next')
 const prevBtn = $('.btn-prev')
@@ -16,13 +16,13 @@ const volumedBtn = $('.btn-volume')
 const volumeProgress = $('.volume-progress')
 const timerCurrent = $('.timer-current')
 const timerTotal = $('.timer-total')
+const autoplayBtn = $('.btn-autoplay')
+const toggleAutoplay = $('.btn-autoplay-toggle')
 const subtitleBtn = $('.btn-subtitle')
-
 const settingsBtn = $('.btn-settings')
 const tracksLanguageList = $('.tracksLanguageList')
 const playbackRateBtn = $('.playbackRate')
 const speedLabel = $('.speedLabel>span')
-    //const quality = $('.quality')
 
 const fullscreenBtn = $('.btn-full-screen')
 const miniPlayerBtn = $('.btn-mini-player')
@@ -42,6 +42,7 @@ const app = {
     isIndexTrack: 0,
     isMediumPlayer: false,
     isCaptionsMode: false,
+    iAutoplay: false,
     isSpeed: 1.0,
     languages: { 'en': 'English', 'vi': 'Vietnamese', 'cn': 'Chinese', 'kr': 'Korean', 'jp': 'Japanese', 'th': 'Thailand', 'it': 'Italy' },
     getLocalStorage: JSON.parse(localStorage.getItem(VIDEO_DATASET)) || {},
@@ -68,28 +69,41 @@ const app = {
         {
             title: "Bloodmoon",
             url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
-            image: "https://image.tmdb.org/t/p/original/9Iu6s8H3yfcWDJFCfpDp43YVPS1.jpg"
+            image: "https://image.tmdb.org/t/p/original/9Iu6s8H3yfcWDJFCfpDp43YVPS1.jpg",
+            tracks: {
+                vi: "https://www.nuevodevel.com/media/captions/steal_fr.vtt",
+            }
         },
         {
             title: "Satave",
             url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-            image: "https://image.tmdb.org/t/p/original/dpYtcxlK0WqvFoDtwMARdIRmgkt.jpg"
+            image: "https://image.tmdb.org/t/p/original/dpYtcxlK0WqvFoDtwMARdIRmgkt.jpg",
+            tracks: {
+                vi: "https://www.nuevodevel.com/media/captions/steal_fr.vtt",
+            }
         },
         {
             title: "Dead Man's Revenge",
             url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-            image: "https://image.tmdb.org/t/p/original/jgHGbpauz0V7tSX3OCcDT6qlIlL.jpg"
+            image: "https://image.tmdb.org/t/p/original/jgHGbpauz0V7tSX3OCcDT6qlIlL.jpg",
+            tracks: {
+                vi: "",
+            }
         },
         {
             title: "The Hills Run Red",
             url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-            image: "https://image.tmdb.org/t/p/original/gCJ1WohqiDTkefsBDYjeIwrvEuc.jpg"
+            image: "https://image.tmdb.org/t/p/original/gCJ1WohqiDTkefsBDYjeIwrvEuc.jpg",
+            tracks: {
+                vi: "",
+            }
         },
     ],
 
     //Render Video to Home
     renderVideos() {
         const videos = this.videos.map((video, index) => {
+            const track = Object.values(video.tracks)
             return `
                 <article class="item ${this.currentIndex===index?"active":""}" data-index="${index}">
                     <div class="poster">
@@ -98,12 +112,13 @@ const app = {
                     <div class="body">
                     <div class="title"><h5 class="title-text">${video.title}</h5></div>
                     <div class="chanel"><p class="name-chanel">Cuồng Phim Review</p></div>
+                    <div class="track">${(track!='')?'<span>CC</span>':''}</div>
                     </div>
                     <div class="btn btn-option"><svg viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" focusable="false" class="style-scope yt-icon" style=""><g class="style-scope yt-icon"><path d="M12,16.5c0.83,0,1.5,0.67,1.5,1.5s-0.67,1.5-1.5,1.5s-1.5-0.67-1.5-1.5S11.17,16.5,12,16.5z M10.5,12 c0,0.83,0.67,1.5,1.5,1.5s1.5-0.67,1.5-1.5s-0.67-1.5-1.5-1.5S10.5,11.17,10.5,12z M10.5,6c0,0.83,0.67,1.5,1.5,1.5 s1.5-0.67,1.5-1.5S12.83,4.5,12,4.5S10.5,5.17,10.5,6z" class="style-scope yt-icon"></path></g></svg></div>
                     <div class="index"><span class="index-number">${Number(index)+1}</span><span class="index-playing">▶</span>
                     </div>
                 </article>`
-        })
+        });
         playlist.innerHTML = videos.join('')
     },
     defineProperties() {
@@ -117,7 +132,6 @@ const app = {
     // Events Handle Video
     handleEventsVideo() {
         const $this = this;
-
         const captions = video.textTracks[this.isIndexTrack] ? video.textTracks[this.isIndexTrack] : [];
         captions.mode = "hidden"
 
@@ -150,17 +164,20 @@ const app = {
                 video.play()
             } else if ($this.isRandom) {
                 $this.toggleRandom()
-            } else {
+                video.play()
+            } else if ($this.isAutoplay) {
                 $this.toggleNext()
+                video.play()
             }
-            video.play()
 
         }
 
         //Catch  Error Video
         video.onerror = () => {
-            $this.toggleNext()
-            video.play()
+            if ($this.isAutoplay) {
+                $this.toggleNext()
+                video.play()
+            }
         }
 
         //CurrentTime & Duration
@@ -237,6 +254,12 @@ const app = {
             video.play()
         }
 
+        autoplayBtn.onclick = (e) => {
+            $this.isAutoplay = !$this.isAutoplay;
+            toggleAutoplay.dataset.autoplay = $this.isAutoplay
+            $this.setLocalStorage('isAutoplay', $this.isAutoplay)
+        }
+
         //Click ToggleSubtitle + localStorage
         subtitleBtn.onclick = () => {
             const toggleSubtitle = () => {
@@ -290,6 +313,8 @@ const app = {
             randomBtn.classList.toggle('active');
             $this.setLocalStorage('isRandom', $this.isRandom);
         }
+
+
 
         //Speed Video
         playbackRateBtn.onclick = (e) => {
@@ -461,7 +486,7 @@ const app = {
             let tracksListControl = '';
             arrayValuesTrack.forEach((value, index) => {
                 if (value != '') {
-                    displayTracks += `<track kind="captions" label="${this.languages[arrayKeysTrack[index]]}" srclang="${arrayKeysTrack[index]}" src="${value}" default/>`;
+                    displayTracks += `<track kind="captions" label="${this.languages[arrayKeysTrack[index]]}" srclang="${arrayKeysTrack[index]}" src="${value}"/>`;
                     tracksListControl += `<li class="track-item" data-track="${arrayKeysTrack[index]}">${this.languages[arrayKeysTrack[index]]}</li>`
                 }
             })
@@ -479,10 +504,7 @@ const app = {
             video.innerHTML = ''
             tracksLanguageList.remove(tracksLanguageList)
         }
-        if (arrayValuesTrack.length > 0) {
-
-        }
-        subtitleBtn.classList.toggle("action", arrayValuesTrack.length)
+        subtitleBtn.classList.toggle("action", arrayValuesTrack.length > 0)
 
         subtitleBtn.classList.toggle("showing", this.isCaptionsMode)
 
@@ -490,19 +512,22 @@ const app = {
 
     //Load current Video & load duration to timeTotal
     loadCurrentVideo() {
+
         headerTitle.innerText = this.currentVideo.title;
         video.poster = this.currentVideo.image;
         video.src = this.currentVideo.url;
-        if (Object.values(this.currentVideo.tracks ? this.currentVideo.tracks : []).length > 0) {
+
+        if (Object.values(this.currentVideo.tracks ? this.currentVideo.tracks : [])[0] != '') {
             this.loadTracks(this.currentVideo.tracks)
         } else {
             this.loadTracks([])
         }
-
+        video.playbackRate = this.isSpeed;
         prevBtn.classList.toggle('active', this.currentIndex)
         this.formatDuration()
     },
     loadLocalStorage() {
+        this.isAutoplay = (this.getLocalStorage.isAutoplay === undefined) ? this.isAutoplay : this.getLocalStorage.isAutoplay;
         this.isSpeed = (this.getLocalStorage.isSpeed === undefined) ? this.isSpeed : this.getLocalStorage.isSpeed;
         this.isMute = (this.getLocalStorage.isMute === undefined) ? this.isMute : this.getLocalStorage.isMute;
         this.isCaptionsMode = (this.getLocalStorage.isCaptionsMode === undefined) ? this.isCaptionsMode : this.getLocalStorage.isCaptionsMode;
@@ -522,11 +547,13 @@ const app = {
         this.loadLocalStorage();
         volumeProgress.value = this.isVolume;
         speedLabel.textContent = this.isSpeed;
+        video.playbackRate = this.isSpeed;
         repeatBtn.classList.toggle('active', this.isRepeat);
         randomBtn.classList.toggle('active', this.isRandom);
         volumedBtn.classList.toggle('active', this.isMute);
         grid.classList.toggle('medium', this.isMediumPlayer);
         subtitleBtn.classList.toggle("showing", this.isCaptionsMode)
+        toggleAutoplay.dataset.autoplay = this.isAutoplay
 
     }
 
