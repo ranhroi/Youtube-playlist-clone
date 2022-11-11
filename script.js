@@ -51,7 +51,7 @@ const app = {
     },
     videos: [{
             title: "Hate Thy Neighbor",
-            url: "file:///D:/Western/New%20folder/tt0189844.mp4",
+            url: "https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-720p.mp4",
             image: "https://image.tmdb.org/t/p/original/icw9JX8NzqhpbvOze0PydX0bahH.jpg",
             tracks: {
                 vi: "https://www.nuevodevel.com/media/captions/steal_fr.vtt",
@@ -59,7 +59,7 @@ const app = {
         },
         {
             title: "Hate Thy Neighbor",
-            url: "file:///D:/Western/New%20folder/tt0189844.mp4",
+            url: "https://file-examples.com/wp-content/uploads/2017/04/file_example_MP4_1920_18MG.mp4",
             image: "https://image.tmdb.org/t/p/original/icw9JX8NzqhpbvOze0PydX0bahH.jpg",
             tracks: {
                 vi: "https://www.nuevodevel.com/media/captions/steal_fr.vtt",
@@ -67,22 +67,22 @@ const app = {
         },
         {
             title: "Bloodmoon",
-            url: "file:///D:/Western/New%20folder/tt0118745.mp4",
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
             image: "https://image.tmdb.org/t/p/original/9Iu6s8H3yfcWDJFCfpDp43YVPS1.jpg"
         },
         {
             title: "Satave",
-            url: "file:///D:/Western/New%20folder/tt0111080.mp4",
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             image: "https://image.tmdb.org/t/p/original/dpYtcxlK0WqvFoDtwMARdIRmgkt.jpg"
         },
         {
             title: "Dead Man's Revenge",
-            url: "file:///D:/Western/New%20folder/tt0109568.mp4",
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
             image: "https://image.tmdb.org/t/p/original/jgHGbpauz0V7tSX3OCcDT6qlIlL.jpg"
         },
         {
             title: "The Hills Run Red",
-            url: "file:///D:/Western/New%20folder/tt0060416.mp4",
+            url: "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
             image: "https://image.tmdb.org/t/p/original/gCJ1WohqiDTkefsBDYjeIwrvEuc.jpg"
         },
     ],
